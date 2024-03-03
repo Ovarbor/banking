@@ -2,7 +2,9 @@
 
 ### System requirements:
 JDK 17 amazon corretto  
+
 PostgreSQL
+
 IntellijIdea
 
 ### Startup instructions:
