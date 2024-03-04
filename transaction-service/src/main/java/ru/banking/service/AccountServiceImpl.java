@@ -2,6 +2,7 @@ package ru.banking.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.banking.dto.AccountDtoResponse;
 import ru.banking.dto.UpdateAccountDtoRequest;
 import ru.banking.exception.ConflictException;
@@ -18,6 +19,7 @@ public class AccountServiceImpl implements AccountService {
     private final AccountMapper accountMapper;
 
     @Override
+    @Transactional
     public AccountDtoResponse sendMoney(Long senderId, Long recipientId, UpdateAccountDtoRequest updateAccountDtoRequest) {
         Account senderAccount = accountRepo.findAccountByUserId(senderId).orElseThrow(() ->
                 new NotFoundValidationException("Account for sender with id: " + senderId + " not found"));
