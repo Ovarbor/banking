@@ -25,9 +25,9 @@ public class AccountServiceImpl implements AccountService {
                 new NotFoundValidationException("Account for sender with id: " + senderId + " not found"));
         Account recipientAccount = accountRepo.findAccountByUserId(recipientId).orElseThrow(() ->
                 new NotFoundValidationException("Account for recipient with id: " + recipientId + " not found"));
-        if ((senderAccount.getBalance() - updateAccountDtoRequest.getBalance()) >= 0.0) {
-            senderAccount.setBalance(senderAccount.getBalance() - updateAccountDtoRequest.getBalance());
-            recipientAccount.setBalance(recipientAccount.getBalance() + updateAccountDtoRequest.getBalance());
+        if (senderAccount.getBalance().compareTo(updateAccountDtoRequest.getBalance()) >= 0) {
+            senderAccount.setBalance(senderAccount.getBalance().subtract(updateAccountDtoRequest.getBalance()));
+            recipientAccount.setBalance(recipientAccount.getBalance().add(updateAccountDtoRequest.getBalance()));
             accountRepo.save(senderAccount);
             accountRepo.save(recipientAccount);
             return accountMapper.toAccountDtoResponse(senderAccount);

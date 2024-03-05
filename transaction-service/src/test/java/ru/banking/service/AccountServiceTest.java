@@ -12,6 +12,8 @@ import ru.banking.dto.UpdateAccountDtoRequest;
 import ru.banking.dto.UserDtoResponse;
 import ru.banking.exception.ConflictException;
 import ru.banking.exception.NotFoundValidationException;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -38,21 +40,21 @@ public class AccountServiceTest {
     @BeforeEach
     void beforeEach() {
         createUserOneDtoRequest = new CreateUserDtoRequest("userOne", "userOne",
-                "89087654324", "userOne@mail.ru", 100.0, LocalDate.of(2012, 4, 5));
+                "89087654324", "userOne@mail.ru", BigDecimal.valueOf(100.0), LocalDate.of(2012, 4, 5));
         createUserTwoDtoRequest = new CreateUserDtoRequest("userTwo", "userTwo",
-                "89147884725", "userTwo@mail.ru", 110.15, LocalDate.of(2007, 8, 12));
-        updateAccountDtoRequest1 = new UpdateAccountDtoRequest(17.30);
-        updateAccountDtoRequest2 = new UpdateAccountDtoRequest(28.0);
+                "89147884725", "userTwo@mail.ru",BigDecimal.valueOf(110.15), LocalDate.of(2007, 8, 12));
+        updateAccountDtoRequest1 = new UpdateAccountDtoRequest(BigDecimal.valueOf(17.30));
+        updateAccountDtoRequest2 = new UpdateAccountDtoRequest(BigDecimal.valueOf(28.0));
     }
 
     @Test
     void shouldSendMoneyFromAccountOneToAccountTwoWhenOk() {
-        updateAccountDtoRequest1 = new UpdateAccountDtoRequest(17.30);
-        updateAccountDtoRequest2 = new UpdateAccountDtoRequest(28.0);
+        updateAccountDtoRequest1 = new UpdateAccountDtoRequest(BigDecimal.valueOf(17.30));
+        updateAccountDtoRequest2 = new UpdateAccountDtoRequest(BigDecimal.valueOf(28.0));
         UserDtoResponse userOneDtoResponse = userService.addUser(createUserOneDtoRequest);
         UserDtoResponse userTwoDtoResponse = userService.addUser(createUserTwoDtoRequest);
-        double userOneUpdateBalance = createUserOneDtoRequest.getBalance() - updateAccountDtoRequest1.getBalance();
-        double userTwoUpdateBalance = createUserTwoDtoRequest.getBalance() + updateAccountDtoRequest1.getBalance();
+        BigDecimal userOneUpdateBalance = createUserOneDtoRequest.getBalance().subtract(updateAccountDtoRequest1.getBalance());
+        BigDecimal userTwoUpdateBalance = createUserTwoDtoRequest.getBalance().add(updateAccountDtoRequest1.getBalance());
         assertThat(accountService.getAccount(userOneDtoResponse.getId()).getBalance(),
                 equalTo(createUserOneDtoRequest.getBalance()));
         accountService.sendMoney(userOneDtoResponse.getId(), userTwoDtoResponse.getId(), updateAccountDtoRequest1);
@@ -60,10 +62,8 @@ public class AccountServiceTest {
                 equalTo(userOneUpdateBalance));
         assertThat(accountService.getAccount(userTwoDtoResponse.getId()).getBalance(),
                 equalTo(userTwoUpdateBalance));
-        userOneUpdateBalance = accountService.getAccount(userOneDtoResponse.getId()).getBalance()
-                + updateAccountDtoRequest2.getBalance();
-        userTwoUpdateBalance = accountService.getAccount(userTwoDtoResponse.getId()).getBalance()
-                - updateAccountDtoRequest2.getBalance();
+        userOneUpdateBalance = accountService.getAccount(userOneDtoResponse.getId()).getBalance().add(updateAccountDtoRequest2.getBalance());
+        userTwoUpdateBalance = accountService.getAccount(userTwoDtoResponse.getId()).getBalance().subtract(updateAccountDtoRequest2.getBalance());
         accountService.sendMoney(userTwoDtoResponse.getId(), userOneDtoResponse.getId(), updateAccountDtoRequest2);
         assertThat(accountService.getAccount(userOneDtoResponse.getId()).getBalance(),
                 equalTo(userOneUpdateBalance));
@@ -74,8 +74,8 @@ public class AccountServiceTest {
 
     @Test
     void shouldThrowExceptionWhenSendMoreThatHaveOnAccount() {
-        updateAccountDtoRequest1 = new UpdateAccountDtoRequest(101.0);
-        updateAccountDtoRequest2 = new UpdateAccountDtoRequest(200.0);
+        updateAccountDtoRequest1 = new UpdateAccountDtoRequest(BigDecimal.valueOf(101.0));
+        updateAccountDtoRequest2 = new UpdateAccountDtoRequest(BigDecimal.valueOf(200.0));
         UserDtoResponse userOneDtoResponse = userService.addUser(createUserOneDtoRequest);
         UserDtoResponse userTwoDtoResponse = userService.addUser(createUserTwoDtoRequest);
         assertThrows(ConflictException.class, () -> accountService.sendMoney(userOneDtoResponse.getId(),
@@ -86,8 +86,8 @@ public class AccountServiceTest {
 
     @Test
     void shouldThrowExceptionWhenSendToRecipientNotFound() {
-        updateAccountDtoRequest1 = new UpdateAccountDtoRequest(15.0);
-        updateAccountDtoRequest2 = new UpdateAccountDtoRequest(13.0);
+        updateAccountDtoRequest1 = new UpdateAccountDtoRequest(BigDecimal.valueOf(15.0));
+        updateAccountDtoRequest2 = new UpdateAccountDtoRequest(BigDecimal.valueOf(13.0));
         UserDtoResponse userOneDtoResponse = userService.addUser(createUserOneDtoRequest);
         UserDtoResponse userTwoDtoResponse = userService.addUser(createUserTwoDtoRequest);
         assertThrows(NotFoundValidationException.class, () -> accountService.sendMoney(userOneDtoResponse.getId(),

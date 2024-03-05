@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "accounts")
 @Data
@@ -18,7 +20,7 @@ public class Account {
     private Long id;
 
     @Column(name = "balance")
-    private Double balance;
+    private BigDecimal balance;
 
     @OneToOne
     @MapsId
