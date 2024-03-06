@@ -19,7 +19,7 @@ public class UserDtoResponse {
 
     private LocalDate birthday;
 
-    private List<EmailDto> emailDtoList;
+    private List<String> emailsList;
 
-    private List<PhoneDto> phoneDtoList;
+    private List<String> phonesList;
 }

@@ -19,12 +19,18 @@ public interface UserRepo extends JpaRepository<User, Long> {
     @Query(value = "SELECT u.username FROM User u")
     List<String> findAllNames();
 
+    @Query(value = "SELECT e.emailsList FROM User e")
+    List<String> findAllEmails();
+
+    @Query(value = "SELECT p.phonesList FROM User p")
+    List<String> findAllPhones();
+
     List<User> findUsersByBirthdayAfter(PageRequest pageRequest, LocalDate birthday);
 
-    @Query(value = "SELECT u FROM User u RIGHT JOIN Phone p ON u.id = p.user.id WHERE p.phone = :phone")
+    @Query(value = "SELECT u FROM User u JOIN u.phonesList p WHERE p = :phone")
     List<User> findUsersByPhone(PageRequest pageRequest, @Param("phone") String phone);
 
-    @Query(value = "SELECT u FROM User u RIGHT JOIN Email e ON u.id = e.user.id WHERE e.email = :email")
+    @Query(value = "SELECT u FROM User u JOIN u.emailsList e WHERE e = :email")
     List<User> findUsersByEmail(PageRequest pageRequest, @Param("email") String email);
 
     @Query(value = "SELECT u FROM User u WHERE u.username LIKE %:text%")

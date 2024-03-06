@@ -30,37 +30,37 @@ public class UserController {
         return ResponseEntity.ok().body(userService.addUserPhoneEmail(user.getId(), updateUserDtoRequest));
     }
 
-    @PatchMapping("/phone/{phoneId}")
+    @PatchMapping("/phone/{phone}")
     public ResponseEntity<UserDtoResponse> updateUserPhone(Principal principal,
-                                                           @PathVariable Long phoneId,
+                                                           @PathVariable String phone,
                                                            @RequestBody UpdateUserPhoneDtoRequest updateUserPhoneDtoRequest) {
         User user = userService.findUserByName(principal.getName());
-        log.info("PATCH: /user/phone/{}", phoneId);
-        return ResponseEntity.ok().body(userService.updateUserPhone(user.getId(), phoneId, updateUserPhoneDtoRequest));
+        log.info("PATCH: /user/phone/{}", phone);
+        return ResponseEntity.ok().body(userService.updateUserPhone(user.getId(), phone, updateUserPhoneDtoRequest));
     }
 
-    @PatchMapping("/email/{emailId}")
+    @PatchMapping("/email/{email}")
     public ResponseEntity<UserDtoResponse> updateUserEmail(Principal principal,
-                                                           @PathVariable Long emailId,
+                                                           @PathVariable String email,
                                                            @RequestBody UpdateUserEmailDtoRequest updateUserEmailDtoRequest) {
         User user = userService.findUserByName(principal.getName());
-        log.info("PATCH: /user/email/{}", emailId);
-        return ResponseEntity.ok().body(userService.updateUserEmail(user.getId(), emailId, updateUserEmailDtoRequest));
+        log.info("PATCH: /user/email/{}", email);
+        return ResponseEntity.ok().body(userService.updateUserEmail(user.getId(), email, updateUserEmailDtoRequest));
     }
 
-    @DeleteMapping("/phone/{phoneId}")
-    public ResponseEntity<Void> deleteUserPhone(Principal principal, @PathVariable Long phoneId) {
+    @DeleteMapping("/phone/{phone}")
+    public ResponseEntity<Void> deleteUserPhone(Principal principal, @PathVariable String phone) {
         User user = userService.findUserByName(principal.getName());
-        log.info("DELETE: /user/phone/{}", phoneId);
-        userService.deleteUserPhone(user.getId(), phoneId);
+        log.info("DELETE: /user/phone/{}", phone);
+        userService.deleteUserPhone(user.getId(), phone);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @DeleteMapping("/email/{emailId}")
-    public ResponseEntity<Void> deleteUserEmail(Principal principal, @PathVariable Long emailId) {
+    @DeleteMapping("/email/{email}")
+    public ResponseEntity<Void> deleteUserEmail(Principal principal, @PathVariable String email) {
         User user = userService.findUserByName(principal.getName());
-        log.info("DELETE: /user/email/{}", emailId);
-        userService.deleteUserEmail(user.getId(), emailId);
+        log.info("DELETE: /user/email/{}", email);
+        userService.deleteUserEmail(user.getId(), email);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

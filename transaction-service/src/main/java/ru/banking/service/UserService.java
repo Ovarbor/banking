@@ -16,13 +16,13 @@ public interface UserService {
 
     UserDtoResponse addUserPhoneEmail(Long userId, UpdateUserDtoRequest updateUserDtoRequest);
 
-    UserDtoResponse updateUserPhone(Long userId, Long phoneId, UpdateUserPhoneDtoRequest updateUserPhoneDtoRequest);
+    UserDtoResponse updateUserPhone(Long userId, String phone, UpdateUserPhoneDtoRequest updateUserPhoneDtoRequest);
 
-    UserDtoResponse updateUserEmail(Long userId, Long phoneId, UpdateUserEmailDtoRequest updateUserEmailDtoRequest);
+    UserDtoResponse updateUserEmail(Long userId, String email, UpdateUserEmailDtoRequest updateUserEmailDtoRequest);
 
-    void deleteUserPhone(Long userId, Long phoneId);
+    void deleteUserPhone(Long userId, String phone);
 
-    void deleteUserEmail(Long userId, Long emailId);
+    void deleteUserEmail(Long userId, String email);
 
     List<UserDtoResponse> searchUser(Long userId, String text, LocalDate birthday, String phone,
                                      String email, Integer from, Integer size);

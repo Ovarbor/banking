@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UpdateUserEmailDtoRequest {
 
-    String email;
+   private String email;
 }

@@ -17,7 +17,7 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_Id")
+    @Column(name = "user_id")
     private Long id;
 
     @Column(name = "username")
@@ -26,17 +26,17 @@ public class User {
     @Column(name = "password")
     private String password;
 
-//    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-//    @PrimaryKeyJoinColumn
-//    private Account account;
-
     @Column(name = "birthday")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate birthday;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    private List<Email> emailList;
+    @ElementCollection
+    @CollectionTable(name = "phones", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "phone")
+    private List<String> phonesList;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    private List<Phone> phoneList;
+    @ElementCollection
+    @CollectionTable(name = "emails", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "email")
+    private List<String> emailsList;
 }

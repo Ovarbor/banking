@@ -96,8 +96,6 @@ public class ExceptionsHandler {
                 .body(new ErrorMessage(e.getMessage()));
     }
 
-
-
     @Getter
     @RequiredArgsConstructor
     public static class Error {

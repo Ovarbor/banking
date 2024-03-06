@@ -1,6 +1,5 @@
 package ru.banking.service;
 
-import lombok.Data;
 import org.springframework.stereotype.Service;
 import ru.banking.dto.AccountDtoResponse;
 import ru.banking.dto.UpdateAccountDtoRequest;
