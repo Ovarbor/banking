@@ -1,7 +1,9 @@
 package ru.banking.service;
 
+import com.querydsl.core.types.dsl.BooleanExpression;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -10,6 +12,7 @@ import ru.banking.exception.ConflictException;
 import ru.banking.exception.NotFoundValidationException;
 import ru.banking.mapper.UserMapper;
 import ru.banking.model.Account;
+import ru.banking.model.QUser;
 import ru.banking.model.User;
 import ru.banking.repo.AccountRepo;
 import ru.banking.repo.UserRepo;
@@ -134,24 +137,30 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserDtoResponse> searchUser(Long userId, String text, LocalDate birthday, String phone, String email, Integer from, Integer size) {
+    public List<UserDtoResponse> searchUser(Long userId, String text, LocalDate birthday,
+                                            String phone, String email, Integer from, Integer size) {
+        Pageable page = PageRequest.of(from, size, Sort.by("username").ascending());
+        BooleanExpression expression = buildExpression(text, birthday, phone, email);
+        List<User> foundUserList = userRepo.findAll(expression, page).getContent();
+        return userMapper.toUserDtoResponseList(foundUserList);
+    }
+
+    private BooleanExpression buildExpression(String text, LocalDate birthday, String phone, String email) {
+        QUser qUser = QUser.user;
+        BooleanExpression expression = qUser.eq(qUser);
+        if (text != null) {
+            expression = expression.and(qUser.username.containsIgnoreCase(text));
+        }
         if (birthday != null) {
-            List<User> userList = userRepo.findUsersByBirthdayAfter(PageRequest.of(from, size, Sort.by("birthday").ascending()), birthday);
-            return userMapper.toUserDtoResponseList(userList);
+            expression = expression.and(qUser.birthday.after(birthday));
         }
         if (phone != null) {
-            List<User> userList = userRepo.findUsersByPhone(PageRequest.of(from, size, Sort.by("username").ascending()), phone);
-            return userMapper.toUserDtoResponseList(userList);
+            expression = expression.and(qUser.phonesList.contains(phone));
         }
         if (email != null) {
-            List<User> userList = userRepo.findUsersByEmail(PageRequest.of(from, size, Sort.by("username").ascending()), email);
-            return userMapper.toUserDtoResponseList(userList);
+            expression = expression.and(qUser.emailsList.contains(email));
         }
-        if (text != null) {
-            List<User> userList = userRepo.findUsersByText(PageRequest.of(from, size, Sort.by("username").ascending()), text);
-            return userMapper.toUserDtoResponseList(userList);
-        }
-        return new ArrayList<>();
+        return expression;
     }
 
     private User userParametersUpdate(User oldUser, UpdateUserDtoRequest updateUserDtoRequest) {
@@ -174,7 +183,6 @@ public class UserServiceImpl implements UserService {
         if (userNamesSet.contains(username)) {
             throw new ConflictException("Username: " + username + ", already used");
         }
-
     }
 
     private void emailValidation(String email) {
