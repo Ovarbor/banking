@@ -14,7 +14,7 @@ IntellijIdea
 4. Use you PostgresDB properties in config:
    - POSTGRES_NAME; 
    - POSTGRES_PASSWORD;
-5. mvn clean package
-6. run app from main class
+5. mvn package spring-boot:repackage
+6. run app from main class or from terminal (jar file in /target)
 
 http://localhost:8080/swagger-ui/index.html
