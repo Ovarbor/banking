@@ -11,9 +11,7 @@ import ru.banking.dto.*;
 import ru.banking.exception.ConflictException;
 import ru.banking.exception.NotFoundValidationException;
 import ru.banking.mapper.UserMapper;
-import ru.banking.model.Account;
-import ru.banking.model.QUser;
-import ru.banking.model.User;
+import ru.banking.model.*;
 import ru.banking.repo.AccountRepo;
 import ru.banking.repo.UserRepo;
 
@@ -31,9 +29,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDtoResponse addUser(CreateUserDtoRequest createUserDtoRequest) {
+        Email email = new Email(createUserDtoRequest.getEmail());
+        Phone phone = new Phone(createUserDtoRequest.getPhone());
         usernameValidation(createUserDtoRequest.getUsername());
-        emailValidation(createUserDtoRequest.getEmail());
-        phoneValidation(createUserDtoRequest.getPhone());
+        emailValidation(email);
+        phoneValidation(phone);
         Account account = new Account();
         account.setBalance(createUserDtoRequest.getBalance());
         User user = new User();
@@ -41,9 +41,9 @@ public class UserServiceImpl implements UserService {
         user.setUsername(createUserDtoRequest.getUsername());
         user.setPassword(passwordEncoder.encode(createUserDtoRequest.getPassword()));
         user.setPhonesList(new ArrayList<>());
-        user.getPhonesList().add(createUserDtoRequest.getPhone());
+        user.getPhonesList().add(phone);
         user.setEmailsList(new ArrayList<>());
-        user.getEmailsList().add(createUserDtoRequest.getEmail());
+        user.getEmailsList().add(email);
         account.setUser(user);
         userRepo.save(user);
         accountRepo.save(account);
@@ -59,8 +59,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDtoResponse addUserPhoneEmail(Long userId, UpdateUserDtoRequest updateUserDtoRequest) {
         Long start = System.nanoTime();
-        emailValidation(updateUserDtoRequest.getEmail());
-        phoneValidation(updateUserDtoRequest.getPhone());
+        emailValidation(new Email(updateUserDtoRequest.getEmail()));
+        phoneValidation(new Phone(updateUserDtoRequest.getPhone()));
         User oldUser = userRepo.findById(userId).orElseThrow(() ->
                 new NotFoundValidationException("User with id: " + userId + " not found"));
         User newUser = userParametersUpdate(oldUser, updateUserDtoRequest);
@@ -72,12 +72,13 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDtoResponse updateUserPhone(Long userId, String phone, UpdateUserPhoneDtoRequest updateUserPhoneDtoRequest) {
         Long startTime = System.nanoTime();
-        phoneValidation(updateUserPhoneDtoRequest.getPhone());
+        Phone requestPhone = new Phone(updateUserPhoneDtoRequest.getPhone());
+        phoneValidation(requestPhone);
         User user = userRepo.findById(userId).orElseThrow(() ->
                 new NotFoundValidationException("User with id: " + userId + " not found"));
-        List<String> phonesList = user.getPhonesList();
-        if (phonesList.contains(phone)) {
-            phonesList.set(phonesList.indexOf(phone), updateUserPhoneDtoRequest.getPhone());
+        List<Phone> phonesList = user.getPhonesList();
+        if (phonesList.contains(requestPhone)) {
+            phonesList.set(phonesList.indexOf(requestPhone), requestPhone);
             userRepo.save(user);
         } else {
             throw new NotFoundValidationException("Phone: " + phone + " not found");
@@ -90,12 +91,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDtoResponse updateUserEmail(Long userId, String email, UpdateUserEmailDtoRequest updateUserEmailDtoRequest) {
-        emailValidation(updateUserEmailDtoRequest.getEmail());
+        Email requestEmail = new Email(updateUserEmailDtoRequest.getEmail());
+        emailValidation(requestEmail);
         User user = userRepo.findById(userId).orElseThrow(() ->
                 new NotFoundValidationException("User with id: " + userId + " not found"));
-        List<String> emailList = user.getEmailsList();
-        if (emailList.contains(email)) {
-            emailList.set(emailList.indexOf(email), updateUserEmailDtoRequest.getEmail());
+        List<Email> emailList = user.getEmailsList();
+        if (emailList.contains(requestEmail)) {
+            emailList.set(emailList.indexOf(requestEmail), requestEmail);
             userRepo.save(user);
         } else {
             throw new NotFoundValidationException("Email: " + email + " not found");
@@ -107,12 +109,13 @@ public class UserServiceImpl implements UserService {
     public void deleteUserPhone(Long userId, String phone) {
         User user = userRepo.findById(userId).orElseThrow(() ->
                 new NotFoundValidationException("User with id: " + userId + " not found"));
-        List<String> phoneList = user.getPhonesList();
+        Phone requestPhone = new Phone(phone);
+        List<Phone> phoneList = user.getPhonesList();
         if (phoneList.size() <= 1) {
             throw new ConflictException("User must have at least one active phone");
         }
-        if (phoneList.contains(phone)) {
-            phoneList.remove(phone);
+        if (phoneList.contains(requestPhone)) {
+            phoneList.remove(requestPhone);
             userRepo.save(user);
         } else {
             throw new NotFoundValidationException("Phone: " + phone + " not found");
@@ -123,12 +126,13 @@ public class UserServiceImpl implements UserService {
     public void deleteUserEmail(Long userId, String email) {
         User user = userRepo.findById(userId).orElseThrow(() ->
                 new NotFoundValidationException("User with id: " + userId + " not found"));
-        List<String> emailList = user.getEmailsList();
+        Email requestEmail = new Email(email);
+        List<Email> emailList = user.getEmailsList();
         if (emailList.size() <= 1) {
             throw  new ConflictException("User must have at least one active email");
         }
-        if (emailList.contains(email)) {
-            emailList.remove(email);
+        if (emailList.contains(requestEmail)) {
+            emailList.remove(requestEmail);
             userRepo.save(user);
         } else {
             throw new NotFoundValidationException("Email: " + email + " not found");
@@ -155,10 +159,10 @@ public class UserServiceImpl implements UserService {
             expression = expression.and(qUser.birthday.after(birthday));
         }
         if (phone != null) {
-            expression = expression.and(qUser.phonesList.contains(phone));
+            expression = expression.and(qUser.phonesList.contains(new Phone(phone)));
         }
         if (email != null) {
-            expression = expression.and(qUser.emailsList.contains(email));
+            expression = expression.and(qUser.emailsList.contains(new Email(email)));
         }
         return expression;
     }
@@ -166,12 +170,14 @@ public class UserServiceImpl implements UserService {
     private User userParametersUpdate(User oldUser, UpdateUserDtoRequest updateUserDtoRequest) {
         if (updateUserDtoRequest.getEmail() != null) {
             if (!updateUserDtoRequest.getEmail().isBlank()) {
-                oldUser.getEmailsList().add(updateUserDtoRequest.getEmail());
+                Email email = new Email(updateUserDtoRequest.getEmail());
+                oldUser.getEmailsList().add(email);
             }
         }
         if (updateUserDtoRequest.getPhone() != null) {
             if (!updateUserDtoRequest.getPhone().isBlank()) {
-                oldUser.getPhonesList().add(updateUserDtoRequest.getPhone());
+                Phone phone = new Phone(updateUserDtoRequest.getPhone());
+                oldUser.getPhonesList().add(phone);
             }
         }
         return oldUser;
@@ -185,15 +191,15 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    private void emailValidation(String email) {
-        Set<String> emailsSet = new HashSet<>(userRepo.findAllEmails());
+    private void emailValidation(Email email) {
+        Set<Email> emailsSet = new HashSet<>(userRepo.findAllEmails());
         if (emailsSet.contains(email)) {
             throw new ConflictException("Email: " + email + ", already used");
         }
     }
 
-    private void phoneValidation(String phone) {
-        Set<String> phonesSet = new HashSet<>(userRepo.findAllPhones());
+    private void phoneValidation(Phone phone) {
+        Set<Phone> phonesSet = new HashSet<>(userRepo.findAllPhones());
         if (phonesSet.contains(phone)) {
             throw new ConflictException("Phone: " + phone + ", already used");
         }

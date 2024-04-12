@@ -33,10 +33,16 @@ public class User {
     @ElementCollection
     @CollectionTable(name = "phones", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "phone")
-    private List<String> phonesList;
+    @AttributeOverrides({
+            @AttributeOverride(name = "phone", column = @Column(name = "phone"))
+    })
+    private List<Phone> phonesList;
 
     @ElementCollection
     @CollectionTable(name = "emails", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "email")
-    private List<String> emailsList;
+    @AttributeOverrides({
+            @AttributeOverride(name = "email", column = @Column(name = "email"))
+    })
+    private List<Email> emailsList;
 }

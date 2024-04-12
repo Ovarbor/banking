@@ -3,6 +3,9 @@ package ru.banking.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.banking.model.Email;
+import ru.banking.model.Phone;
+
 import java.time.LocalDate;
 import java.util.List;
 
@@ -19,7 +22,7 @@ public class UserDtoResponse {
 
     private LocalDate birthday;
 
-    private List<String> emailsList;
+    private List<Email> emailsList;
 
-    private List<String> phonesList;
+    private List<Phone> phonesList;
 }
