@@ -1,15 +1,14 @@
 package ru.banking.dto;
 
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class UpdateUserDtoRequest {
+@NoArgsConstructor
+public class PhoneDtoResponse {
 
     private String phone;
-
-    private String email;
 }

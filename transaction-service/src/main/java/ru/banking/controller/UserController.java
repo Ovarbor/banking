@@ -65,7 +65,7 @@ public class UserController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<UserDtoResponse>> searchUser(Principal principal,
+    public ResponseEntity<List<SearchUserDtoResponse>> searchUser(Principal principal,
                                                  @RequestParam(value = "text", required = false) String text,
                                                  @RequestParam(required = false) LocalDate birthday,
                                                  @RequestParam(required = false) String phone,

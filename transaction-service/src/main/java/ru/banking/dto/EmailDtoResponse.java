@@ -5,11 +5,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class UpdateUserDtoRequest {
-
-    private String phone;
+@NoArgsConstructor
+public class EmailDtoResponse {
 
     private String email;
 }

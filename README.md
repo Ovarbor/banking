@@ -12,6 +12,9 @@ IntellijIdea
 2. Unpack zip-file
 3. Open app in IntellijIdea
 4. Use you PostgresDB properties in config:
+   - DB_HOSTNAME;
+   - DB_PORT;
+   - DB_NAME;
    - POSTGRES_NAME; 
    - POSTGRES_PASSWORD;
 5. mvn package spring-boot:repackage

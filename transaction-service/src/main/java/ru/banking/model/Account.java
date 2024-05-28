@@ -21,7 +21,8 @@ public class Account {
     @Column(name = "balance")
     private BigDecimal balance;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @OneToOne
+    @MapsId
+    @JoinColumn(name = "account_id")
     private User user;
 }

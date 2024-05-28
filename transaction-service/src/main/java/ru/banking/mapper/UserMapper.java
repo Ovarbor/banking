@@ -1,6 +1,7 @@
 package ru.banking.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import ru.banking.dto.SearchUserDtoResponse;
 import ru.banking.dto.UserDtoResponse;
 import ru.banking.model.User;
 import java.util.List;
@@ -18,5 +19,5 @@ public interface UserMapper {
 
     @Mapping(source = "emailsList", target = "emailsList")
     @Mapping(source = "phonesList", target = "phonesList")
-    List<UserDtoResponse> toUserDtoResponseList(List<User> userList);
+    List<SearchUserDtoResponse> toUserDtoResponseList(List<User> userList);
 }

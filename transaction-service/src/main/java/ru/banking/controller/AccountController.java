@@ -12,7 +12,7 @@ import ru.banking.service.UserService;
 import java.security.Principal;
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/user/account")
 @RequiredArgsConstructor
 @Slf4j
 public class AccountController {
@@ -28,7 +28,7 @@ public class AccountController {
         return ResponseEntity.ok().body(accountService.sendMoney(user.getId(), recipientId, updateAccountDtoRequest));
     }
 
-    @GetMapping("/account")
+    @GetMapping()
     public ResponseEntity<AccountDtoResponse> getAccount(Principal principal) {
         User user = userService.findUserByName(principal.getName());
         log.info("GET: /user/account :{}", principal.getName());

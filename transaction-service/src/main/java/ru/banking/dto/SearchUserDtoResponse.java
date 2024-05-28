@@ -1,5 +1,6 @@
 package ru.banking.dto;
 
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,9 +11,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserDtoResponse {
-
-    private Long id;
+public class SearchUserDtoResponse {
 
     private String username;
 

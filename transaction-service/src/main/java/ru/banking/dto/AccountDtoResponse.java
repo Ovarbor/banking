@@ -13,5 +13,7 @@ public class AccountDtoResponse {
 
     Long id;
 
+    String username;
+
     BigDecimal balance;
 }
