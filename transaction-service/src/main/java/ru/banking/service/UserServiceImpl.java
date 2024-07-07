@@ -2,9 +2,15 @@ package ru.banking.service;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.scheduling.support.PeriodicTrigger;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.banking.dto.*;
@@ -19,15 +25,23 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.Future;
+
 
 @Service
 @RequiredArgsConstructor
+@EnableScheduling
+@EnableAsync
+@Slf4j
 public class UserServiceImpl implements UserService {
 
     private final UserRepo userRepo;
     private final UserMapper userMapper;
     private final AccountRepo accountRepo;
     private final PasswordEncoder passwordEncoder;
+    private final ThreadPoolTaskScheduler taskScheduler;
+    private final PeriodicTrigger periodicTrigger;
+    private final Map<Long, Future<?>> runningTasks = new HashMap<>();
 
     @Override
     public UserDtoResponse addUser(CreateUserDtoRequest createUserDtoRequest) {
@@ -49,25 +63,27 @@ public class UserServiceImpl implements UserService {
         account.setUser(user);
         userRepo.save(user);
         accountRepo.save(account);
-        stackAccountBalance(60000, 60000, account.getBalance(), account);
+        stackAccountBalance(account.getBalance(), account);
         return userMapper.toUserDtoResponse(user);
     }
 
-    private void stackAccountBalance(int delay, int period, BigDecimal startBalance, Account account) {
-        Timer timer = new Timer();
-        timer.scheduleAtFixedRate(new TimerTask() {
+    private void stackAccountBalance(BigDecimal startBalance, Account account) {
+        TimerTask timerTask = new TimerTask() {
+            @SneakyThrows
             @Override
             public void run() {
                 Account account1 = accountRepo.findById(account.getId()).orElseThrow();
                 BigDecimal actualBalance = account1.getBalance();
                 if (actualBalance.compareTo(startBalance.multiply(BigDecimal.valueOf(2.07))) > 0) {
-                    timer.cancel();
+                    runningTasks.get(account.getId()).cancel(true);
                 } else {
                     account.setBalance(actualBalance.add(actualBalance.multiply(BigDecimal.valueOf(0.05))).setScale(7, RoundingMode.HALF_DOWN));
                     accountRepo.save(account);
                 }
+                log.info(Thread.currentThread().getName());
             }
-        }, delay, period);
+        };
+        runningTasks.put(account.getId(), taskScheduler.schedule(timerTask, periodicTrigger));
     }
 
     @Override
@@ -204,7 +220,6 @@ public class UserServiceImpl implements UserService {
         }
         return oldUser;
     }
-
 
     private void usernameValidation(String username) {
         Set<String> userNamesSet = new HashSet<>(userRepo.findAllNames());
